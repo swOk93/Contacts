@@ -2,6 +2,11 @@ package contacts
 
 val contacts: MutableList<Contact> = mutableListOf()
 
+fun isContactsEmpty(action: String) = if (contacts.size < 1) {
+    println("No records to $action!")
+    true
+} else false
+
 fun checkNumber(number: String): String {
     val firstBracket = """\(\w+\)([- ]\w{2,})*"""
     val secondBracket = """\w+[- ]\(\w{2,}\)([- ]\w{2,})*"""
@@ -10,58 +15,50 @@ fun checkNumber(number: String): String {
     return if (phoneNumberRegex.matches(number)) number else "[no number]".also { println("Wrong number format!") }
 }
 
-fun numOrNull(): Int? {
-    val num = readln().toIntOrNull()    // if this is a number
-    if (num in 1.. contacts.size) return num// in right range
-    println("Wrong number")
-    return null
+fun numOrNull(input: String): Int? {
+    val num = input.toIntOrNull()    // if this is a number
+    return if (num != null && num in 1..contacts.size) num
+    else {
+        println("Wrong number")
+        null
+    }
 }
 
 class Contact(var name: String, var surname: String, number: String) {
-    private var _number: String = ""
-    var number: String
-        get() = _number
+    var number: String = number
         set(value) {
-            _number = checkNumber(value)
+            field = checkNumber(value)
         }
 
     init {
-        this.number = number // вызовет set(), сработает проверка
+        this.number = number
     }
 }
+
 
 
 object Actions {
     fun add() {
-        println("Enter the name:")
-        val name: String = readln()
-        println("Enter the surname:")
-        val surname: String = readln()
-        println("Enter the number:")
-        val number: String = readln()
+        val name: String = println("Enter the name:").run { readln() }
+        val surname: String = println("Enter the surname:").run { readln() }
+        val number: String = println("Enter the number:").run { readln() }
         contacts.add(Contact(name, surname, number))
     }
 
     fun remove() {
-        if (contacts.size < 1) {
-            println("No records to remove!")
-            return
-        }
+        if (isContactsEmpty("remove")) return
         list()
         println("Select a record:")
-        val numRec = numOrNull() ?: return
+        val numRec = numOrNull(readln()) ?: return
         contacts.removeAt(numRec - 1)
         println("The record removed!")
     }
 
     fun edit() {
-        if (contacts.size < 1) {
-            println("No records to edit!")
-            return
-        }
+        if (isContactsEmpty("edit")) return
         list()
         println("Select a record:")
-        val numRec = numOrNull() ?: return
+        val numRec = numOrNull(readln()) ?: return
         println("Select a field (name, surname, number):")
         val field = readln()
         when (field) {
@@ -77,10 +74,15 @@ object Actions {
         println("The Phone Book has ${contacts.count()} records.")
     }
 
-    fun list() {
+    private fun list() {
         for (i in 0..<contacts.size) {
             println("${i+1}. ${contacts[i].name} ${contacts[i].surname}, ${contacts[i].number}")
         }
+    }
+
+    fun info() {
+        if (isContactsEmpty("list")) return else list()
+        println("Enter index to show info:")
     }
 
 }
@@ -93,8 +95,9 @@ fun main() {
             "remove" -> Actions.remove()
             "edit" -> Actions.edit()
             "count" -> Actions.count()
-            "list" -> Actions.list()
+            "info" -> Actions.info()
             "exit" -> break
+            else -> println("Unknown command!")
         }
     }
 }
