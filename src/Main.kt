@@ -7,7 +7,14 @@ fun checkNumber(number: String): String {
     val secondBracket = "(\\w+[- ]\\(\\w{2,}\\)([- ]\\w{2,})*)"
     val noBracket = "(\\w+[- ]\\w{2,}([- ]\\w{2,})*)"
     val phoneNumberRegex = Regex("\\+?(\\w+|$firstBracket|$secondBracket|$noBracket)")
-    return if (phoneNumberRegex.matches(number)) number else "".also { println("Wrong number format!") }
+    return if (phoneNumberRegex.matches(number)) number else "[no number]".also { println("Wrong number format!") }
+}
+
+fun numOrNull(): Int? {
+    val num = readln().toIntOrNull()    // if this is a number
+    if (num in 1.. contacts.size) return num// in right range
+    println("Wrong number")
+    return null
 }
 
 class Contact(var name: String, var surname: String, number: String) {
@@ -38,7 +45,8 @@ object Actions {
         }
         list()
         println("Select a record:")
-        contacts.removeAt(readln().toInt() - 1)
+        val numRec = numOrNull() ?: return
+        contacts.removeAt(numRec - 1)
         println("The record removed!")
     }
 
@@ -49,13 +57,13 @@ object Actions {
         }
         list()
         println("Select a record:")
-        val numRec = readln().toInt()
+        val numRec = numOrNull() ?: return
         println("Select a field (name, surname, number):")
         val field = readln()
         when (field) {
-            "name" -> contacts[numRec].name = readln().also { println("Enter the name:") }
-            "surname" -> contacts[numRec].surname = readln().also { println("Enter the surname:") }
-            "number" -> contacts[numRec].number = readln().also { println("Enter the number:") }
+            "name" -> println("Enter the name:").also { contacts[numRec - 1].name = readln() }
+            "surname" -> println("Enter the surname:").also { contacts[numRec - 1].surname = readln() }
+            "number" -> println("Enter the number:").also { contacts[numRec - 1].number = readln() }
             else -> println("Wrong field!")
         }
         println("The record updated!")
