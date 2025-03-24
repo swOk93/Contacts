@@ -3,10 +3,10 @@ package contacts
 val contacts: MutableList<Contact> = mutableListOf()
 
 fun checkNumber(number: String): String {
-    val firstBracket = "(\\(\\w+\\)([- ]\\w{2,})*)"
-    val secondBracket = "(\\w+[- ]\\(\\w{2,}\\)([- ]\\w{2,})*)"
-    val noBracket = "(\\w+[- ]\\w{2,}([- ]\\w{2,})*)"
-    val phoneNumberRegex = Regex("\\+?(\\w+|$firstBracket|$secondBracket|$noBracket)")
+    val firstBracket = """\(\w+\)([- ]\w{2,})*"""
+    val secondBracket = """\w+[- ]\(\w{2,}\)([- ]\w{2,})*"""
+    val noBracket = """\w+[- ]\w{2,}([- ]\w{2,})*"""
+    val phoneNumberRegex = Regex("""^\+?(\w+|$firstBracket|$secondBracket|$noBracket)$""")
     return if (phoneNumberRegex.matches(number)) number else "[no number]".also { println("Wrong number format!") }
 }
 
@@ -19,13 +19,17 @@ fun numOrNull(): Int? {
 
 class Contact(var name: String, var surname: String, number: String) {
     private var _number: String = ""
-
     var number: String
         get() = _number
         set(value) {
             _number = checkNumber(value)
         }
+
+    init {
+        this.number = number // вызовет set(), сработает проверка
+    }
 }
+
 
 object Actions {
     fun add() {
