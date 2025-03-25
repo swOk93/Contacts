@@ -1,5 +1,7 @@
 package contacts
 
+import java.time.LocalDateTime
+
 val contacts: MutableList<Contact> = mutableListOf()
 
 fun isContactsEmpty(action: String) = if (contacts.size < 1) {
@@ -18,15 +20,19 @@ fun numOrNull(input: String): Int? {
 }
 
 open class Contact(var name: String, var number: String) {
-
-    open fun getName(): String {
-        return "$name"
-    }
-
+    val created = LocalDateTime.now().toString().substring(0, 16)
+    var edited = created
     open fun getInfo(): String {
-        return "$name"
+        return name
     }
 
+    open fun getFullInfo(): String {
+        return """Name: $name
+        Surname: $name"""
+    }
+    fun updateEditTime() {
+        edited = LocalDateTime.now().toString().substring(0, 16)
+    }
     companion object {
         fun checkNumber(number: String): String {
             val firstBracket = """\(\w+\)([- ]\w{2,})*"""
@@ -39,18 +45,23 @@ open class Contact(var name: String, var number: String) {
 }
 
 class Person(name: String, var surname: String, var birthDate: String, var gender: String, number: String) : Contact(name, number) {
-//    var birthDate: String = number 
-//        set(value) {
-//            field = checkBirthDate(value)
-//        }
-//    var gender: String = gender
-//        set(value) {
-//            field = checkGender(value)
-//        }
 
-    override fun getName(): String {
+    override fun getInfo(): String {
         return "$name, $surname"
     }
+
+    override fun getFullInfo(): String {
+        return """
+        |Name: $name
+        |Surname: $surname
+        |Birth date: $birthDate
+        |Gender: $gender
+        |Number: $number
+        |Time created: $created
+        |Time last edit: $edited
+    """.trimMargin()
+    }
+
 
     companion object {
         fun checkBirthDate(str: String): String {
@@ -63,7 +74,17 @@ class Person(name: String, var surname: String, var birthDate: String, var gende
     }
 }
 
-class Organization(name: String, address: String, number: String) : Contact(name, number) 
+class Organization(name: String, var address: String, number: String) : Contact(name, number) {
+    override fun getFullInfo(): String {
+        return """
+        |Organization name: $name
+        |Address: $address
+        |Number: $number
+        |Time created: $created
+        |Time last edit: $edited
+    """.trimMargin()
+    }
+}
 
 object PhoneBookManager {
     private fun addOrganization() {
@@ -111,13 +132,29 @@ object PhoneBookManager {
         list()
         println("Select a record:")
         val numRec = numOrNull(readln()) ?: return
-        println("Select a field (name, surname, number):")
-        val field = readln()
-        when (field) {
-            "name" -> println("Enter the name:").also { contacts[numRec - 1].name = readln() }
-            "surname" -> println("Enter the surname:").also { contacts[numRec - 1].surname = readln() }
-            "number" -> println("Enter the number:").also { contacts[numRec - 1].number = readln() }
-            else -> println("Wrong field!")
+        when (val contact = contacts[numRec - 1]) {
+            is Person -> {
+                println("Select a field (name, surname, birth, gender, number):")
+                val field = readln()
+                when (field) {
+                    "name" -> println("Enter the name:").also { contact.name = readln() }
+                    "surname" -> println("Enter the surname:").also { contact.surname = readln() }
+                    "birth" -> println("Enter the name:").also { contact.birthDate = readln() }
+                    "gender" -> println("Enter the name:").also { contact.gender = readln() }
+                    "number" -> println("Enter the number:").also { contact.number = readln() }
+                    else -> println("Wrong field!").also { return } // Closes the function before changes in the "edited" are made.
+                }.also { contact.updateEditTime() }
+            }
+            is Organization -> {
+                println("Select a field (address, number):")
+                val field = readln()
+                when (field) {
+                    "name" -> println("Enter the name:").also { contact.name = readln() }
+                    "address" -> println("Enter the surname:").also { contact.address = readln() }
+                    "number" -> println("Enter the number:").also { contact.number = readln() }
+                    else -> println("Wrong field!").also { return } // Closes the function before changes in the "edited" are made.
+                }.also { contact.updateEditTime() }
+            }
         }
         println("The record updated!")
     }
@@ -128,20 +165,22 @@ object PhoneBookManager {
 
     private fun list() {
         for (i in 0..<contacts.size) {
-            println("${i + 1}. ${contacts[i].getName()}")
+            println("${i + 1}. ${contacts[i].getInfo()}")
         }
     }
 
     fun info() {
         if (isContactsEmpty("list")) return else list()
         println("Enter index to show info:")
+        println(contacts[readln().toInt()-1].getFullInfo())
     }
 
 }
 
 fun main() {
+    println(LocalDateTime.now().toString().substring(0, 16))
     while (true) {
-        println("Enter action (add, remove, edit, count, list, exit):\n")
+        println("Enter action (add, remove, edit, count, info, exit):\n")
         when (readln()) {
             "add" -> PhoneBookManager.add()
             "remove" -> PhoneBookManager.remove()
