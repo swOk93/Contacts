@@ -172,15 +172,14 @@ object PhoneBookManager {
     fun info() {
         if (isContactsEmpty("list")) return else list()
         println("Enter index to show info:")
-        println(contacts[readln().toInt()-1].getFullInfo())
+        println(contacts[readln().toInt()-1].getFullInfo()) // no safety place
     }
 
 }
 
 fun main() {
-    println(LocalDateTime.now().toString().substring(0, 16))
     while (true) {
-        println("Enter action (add, remove, edit, count, info, exit):\n")
+        println("Enter action (add, remove, edit, count, info, exit):")
         when (readln()) {
             "add" -> PhoneBookManager.add()
             "remove" -> PhoneBookManager.remove()
@@ -190,5 +189,6 @@ fun main() {
             "exit" -> break
             else -> println("Unknown command!")
         }
+        println()
     }
 }
